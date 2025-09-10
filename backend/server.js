@@ -28,7 +28,8 @@ app.post("/create-checkout-session", async (req, res) => {
         },
       ],
       mode: "payment",
-     
+      success_url: "https://demo-payment-integration.netlify.app/success.html",
+      cancel_url: "https://demo-payment-integration.netlify.app/cancel.html",
     });
 
     res.json({ id: session.id });

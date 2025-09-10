@@ -169,7 +169,7 @@
     let stripe;
 
     async function initStripe() {
-      const res = await fetch("https://payment-gateway-1-se2h.onrender.com/config");
+      const res = await  fetch("http://localhost:3000/config");
       const { publishableKey } = await res.json();
       stripe = Stripe(publishableKey);
     }
@@ -184,7 +184,7 @@
         spinner.style.display = "inline-block";
         btnText.textContent = "Redirecting...";
 
-        const res = await fetch("https://payment-gateway-1-se2h.onrender.com/create-checkout-session", {
+        const res = await fetch("http://localhost:3000/create-checkout-session", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ quantity: 1 })
