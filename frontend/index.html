@@ -6,17 +6,163 @@
   <title>Stripe Checkout — Beef Burger</title>
   <script src="https://js.stripe.com/v3/"></script>
   <style>
-    body { font-family: Arial; display:flex; justify-content:center; align-items:center; height:100vh; background:#eef2f7; margin:0; }
-    .card { background:white; padding:32px; border-radius:12px; text-align:center; width:320px; }
-    button { padding:12px 24px; border:none; border-radius:8px; background:#5b8def; color:white; font-weight:700; cursor:pointer; margin-top:12px; }
-    button:disabled { opacity:0.6; cursor:not-allowed; }
+    :root{
+      --bg1: #f6f8ff;
+      --bg2: #eef6ff;
+      --card-bg: #ffffff;
+      --accent: #5b8def;
+      --accent-dark: #2f63c9;
+      --muted: #6b7280;
+    }
+    *{box-sizing: border-box;}
+    body{
+      margin:0;
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;
+      background: linear-gradient(135deg, var(--bg1), var(--bg2));
+      min-height:100vh;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      padding:24px;
+    }
+    .card {
+      width: 100%;
+      max-width: 980px;
+      background: linear-gradient(180deg, rgba(255,255,255,0.9), var(--card-bg));
+      border-radius: 18px;
+      box-shadow: 0 10px 30px rgba(20, 30, 60, 0.12);
+      display: grid;
+      grid-template-columns: 360px 1fr;
+      overflow: hidden;
+    }
+    .media {
+      background: linear-gradient(135deg, rgba(91,141,239,0.12), rgba(47,99,201,0.06));
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      padding: 32px;
+    }
+    .product-illustration {
+      width: 260px;
+      height: 260px;
+      border-radius: 16px;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      background: radial-gradient(circle at 30% 20%, rgba(91,141,239,0.14), rgba(0,0,0,0) 40%),
+                  linear-gradient(180deg,#fff,#fafcff);
+      box-shadow: 0 8px 24px rgba(47,99,201,0.12);
+      transition: transform .45s cubic-bezier(.2,.9,.2,1);
+    }
+    .product-illustration:hover { transform: translateY(-6px) rotate(-1deg) scale(1.02); }
+    .content { padding: 28px 32px; display:flex; flex-direction:column; gap:18px; }
+    .brand { display:flex; align-items:center; gap:10px; }
+    .brand .logo {
+      width:40px; height:40px; border-radius:9px;
+      background: linear-gradient(135deg,var(--accent),var(--accent-dark));
+      display:flex; align-items:center; justify-content:center;
+      color: white; font-weight:700; font-size:18px;
+      box-shadow: 0 6px 20px rgba(91,141,239,0.18);
+    }
+    h1 { margin:0; font-size:22px; color:#0f1724; }
+    p.desc { margin:0; color:var(--muted); font-size:14px; line-height:1.45; }
+    .price-row { display:flex; align-items:baseline; gap:12px; margin-top:6px; }
+    .price { font-size:28px; font-weight:700; color: #0f1724; }
+    .old-price { text-decoration: line-through; color: var(--muted); font-size:14px; }
+    .features { display:flex; gap:12px; flex-wrap:wrap; margin-top:8px; }
+    .feature {
+      background: rgba(15,23,36,0.03);
+      padding:8px 12px; border-radius:999px;
+      font-size:13px; color:#334155;
+      box-shadow: inset 0 -1px 0 rgba(0,0,0,0.02);
+    }
+    .cta { margin-top:auto; display:flex; gap:12px; align-items:center; }
+    .btn {
+      border: none; padding: 12px 18px; border-radius: 12px;
+      font-weight: 700; font-size: 15px; cursor:pointer;
+      display:inline-flex; align-items:center; gap:10px;
+      transition: transform .16s ease, box-shadow .16s ease;
+    }
+    .btn.pay {
+      background: linear-gradient(90deg,var(--accent),var(--accent-dark));
+      color: #fff; box-shadow: 0 10px 24px rgba(47,99,201,0.18);
+    }
+    .btn.pay:active { transform: translateY(1px) scale(.998); }
+    .btn.pay:disabled { opacity:0.6; cursor:not-allowed; transform:none; box-shadow:none; }
+    .btn.secondary { background: transparent; color: var(--accent-dark); border: 1px solid rgba(47,99,201,0.12); padding: 10px 14px; }
+    .spinner {
+      width:18px; height:18px; border-radius:50%;
+      border:3px solid rgba(255,255,255,0.25);
+      border-top-color: rgba(255,255,255,0.95);
+      animation: spin .9s linear infinite;
+    }
+    @keyframes spin{ to { transform: rotate(360deg);} }
+    @media (max-width:760px){
+      .card { grid-template-columns: 1fr; max-width:420px; }
+      .product-illustration { width:200px; height:200px; }
+    }
   </style>
 </head>
 <body>
-  <div class="card">
-    <h2>Beef Burger 🍔</h2>
-    <p>Price: $10</p>
-    <button id="checkoutBtn">Pay $10 — Checkout</button>
+  <div class="card" role="region" aria-label="Product card">
+    <div class="media" aria-hidden="true">
+      <div class="product-illustration" title="Beef Burger">
+        <!-- 🍔 Burger Illustration -->
+        <svg width="160" height="140" viewBox="0 0 160 140" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+          <defs>
+            <linearGradient id="bunTop" x1="0" x2="0" y1="0" y2="1">
+              <stop offset="0" stop-color="#FFD479"/>
+              <stop offset="1" stop-color="#ECA34C"/>
+            </linearGradient>
+            <linearGradient id="bunBottom" x1="0" x2="0" y1="0" y2="1">
+              <stop offset="0" stop-color="#ECA34C"/>
+              <stop offset="1" stop-color="#C97A2B"/>
+            </linearGradient>
+          </defs>
+          <ellipse cx="80" cy="55" rx="50" ry="22" fill="url(#bunTop)" stroke="#C97A2B" stroke-width="2"/>
+          <ellipse cx="65" cy="50" rx="3" ry="2" fill="white" opacity="0.7"/>
+          <ellipse cx="85" cy="48" rx="3" ry="2" fill="white" opacity="0.7"/>
+          <ellipse cx="95" cy="53" rx="3" ry="2" fill="white" opacity="0.7"/>
+          <ellipse cx="72" cy="56" rx="3" ry="2" fill="white" opacity="0.7"/>
+          <rect x="35" y="65" width="90" height="10" rx="4" fill="#4CAF50"/>
+          <rect x="40" y="75" width="80" height="8" rx="2" fill="#FFD93D"/>
+          <rect x="35" y="83" width="90" height="14" rx="4" fill="#6B3E2E"/>
+          <ellipse cx="80" cy="100" rx="50" ry="16" fill="url(#bunBottom)" stroke="#8B4513" stroke-width="2"/>
+        </svg>
+      </div>
+    </div>
+    <div class="content">
+      <div class="brand">
+        <div class="logo">BB</div>
+        <div>
+          <div style="font-size:13px;color:var(--muted);">Burger Brand</div>
+          <div style="font-weight:700;color:#0f1724;">Juicy Beef Burger</div>
+        </div>
+      </div>
+
+      <h1>Beef Burger</h1>
+      <p class="desc">A juicy, flame-grilled beef patty layered with cheddar cheese, fresh lettuce, tomatoes, pickles, and creamy sauce inside a toasted bun. A true classic for every beef lover.</p>
+
+      <div class="price-row">
+        <div class="price">$10</div>
+        <div class="old-price">$15</div>
+        <div class="badge" style="margin-left:8px;">20% OFF</div>
+      </div>
+
+      <div class="features">
+        <div class="feature">Fresh Ingredients</div>
+        <div class="feature">Flame Grilled</div>
+        <div class="feature">Secure Checkout</div>
+      </div>
+
+      <div class="cta">
+        <button id="checkoutBtn" class="btn pay">
+          <span id="btnText">Pay $10 — Checkout</span>
+          <span id="spinner" style="display:none;" class="spinner"></span>
+        </button>
+        <button class="btn secondary" onclick="alert('This is a demo Beef Burger checkout page using Stripe!')">More info</button>
+      </div>
+    </div>
   </div>
 
   <script>
@@ -29,27 +175,37 @@
     }
 
     const btn = document.getElementById("checkoutBtn");
+    const spinner = document.getElementById("spinner");
+    const btnText = document.getElementById("btnText");
 
-    btn.addEventListener("click", async () => {
+    async function createCheckout() {
       try {
         btn.disabled = true;
+        spinner.style.display = "inline-block";
+        btnText.textContent = "Redirecting...";
+
         const res = await fetch("https://payment-gateway-1-se2h.onrender.com/create-checkout-session", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ quantity: 1 })
         });
 
-        const { id } = await res.json();
-        const result = await stripe.redirectToCheckout({ sessionId: id });
+        const session = await res.json();
+        if (!session.id) throw new Error("No session ID returned");
+
+        const result = await stripe.redirectToCheckout({ sessionId: session.id });
         if (result.error) alert(result.error.message);
       } catch (err) {
         console.error(err);
-        alert("Payment failed: " + err.message);
+        alert("Payment error: " + err.message);
       } finally {
         btn.disabled = false;
+        spinner.style.display = "none";
+        btnText.textContent = "Pay $10 — Checkout";
       }
-    });
+    }
 
+    btn.addEventListener("click", createCheckout);
     initStripe();
   </script>
 </body>
