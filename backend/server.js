@@ -28,8 +28,7 @@ app.post("/create-checkout-session", async (req, res) => {
         },
       ],
       mode: "payment",
-      success_url: "https://payment-gateway-1-se2h.onrender.com/success",
-      cancel_url: "https://payment-gateway-1-se2h.onrender.com/cancel",
+     
     });
 
     res.json({ id: session.id });
@@ -40,7 +39,6 @@ app.post("/create-checkout-session", async (req, res) => {
 });
 
 // 🔹 Home Route
-app.get("/", (req, res) => res.send("✅ Stripe Server is running..."));
 
 // 🔹 Success Page
 app.get("/success", (req, res) => {
